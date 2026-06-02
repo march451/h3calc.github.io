@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaawansowany Kalkulator Demonów - HoMM3</title>
+    <style>
+        :root {
+            --bg-color: #1a1511;
+            --panel-bg: #2b221a;
+            --border-color: #8c6b3e;
+            --text-main: #e2cca6;
+            --text-highlight: #ffcc00;
+            --accent: #b93030;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .calculator-container {
+            background-color: var(--panel-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-highlight);
+            font-size: 24px;
+            margin-top: 0;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        h2 {
+            font-size: 18px;
+            color: var(--text-highlight);
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .input-group label {
+            flex: 1;
+        }
+
+        .input-group input[type="number"] {
+            width: 80px;
+            background-color: #110e0c;
+            color: var(--text-highlight);
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            font-size: 16px;
+            text-align: right;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .results {
+            background-color: #110e0c;
+            border: 2px solid var(--accent);
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .results h3 {
+            margin: 0 0 10px 0;
+            color: var(--text-main);
+        }
+
+        .final-number {
+            font-size: 48px;
+            color: var(--accent);
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(185, 48, 48, 0.5);
+            margin: 10px 0;
+        }
+
+        .stats {
+            font-size: 14px;
+            color: #aaa;
+            text-align: left;
+            margin-top: 15px;
+            border-top: 1px dashed #555;
+            padding-top: 10px;
+        }
+
+        .warning {
+            color: #d4a373;
+            font-size: 12px;
+            margin-top: 10px;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator-container">
+        <h1>Kalkulator Demonów</h1>
+
+        <div class="section">
+            <h2>Twoje Siły</h2>
+            <div class="input-group">
+                <label for="pitLords">Liczba Czartów Lordów:</label>
+                <input type="number" id="pitLords" value="10" min="0" oninput="calculate()">
+            </div>
+            <div class="input-group">
+                <label for="deadUnits">Liczba poświęcanych jednostek:</label>
+                <input type="number" id="deadUnits" value="100" min="0" oninput="calculate()">
+            </div>
+            <div class="input-group">
+                <label for="baseHp">Bazowe HP jednostki (np. Gog = 15):</label>
+                <input type="number" id="baseHp" value="15" min="1" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Artefakty zwiększające HP</h2>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="elixirLife" onchange="calculate()">
+                <label for="elixirLife" style="color: #ff99ff; font-weight: bold;">Złożony Eliksir Życia (+4 HP, +25% HP)</label>
+            </div>
+            <div style="margin: 10px 0; border-top: 1px solid var(--border-color);"></div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="ringVitality" onchange="calculate()">
+                <label for="ringVitality">Pierścień Witalności (+1 HP)</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="ringLife" onchange="calculate()">
+                <label for="ringLife">Pierścień Życia (+1 HP)</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="vialLifeblood" onchange="calculate()">
+                <label for="vialLifeblood">Fiolka Życiodajnej Krwi (+2 HP)</label>
+            </div>
+        </div>
+
+        <div class="results">
+            <h3>Wyprodukowane Demony:</h3>
+            <div class="final-number" id="finalDemons">0</div>
+            
+            <div class="stats">
+                <div>HP jednej jednostki po modyfikatorach: <strong id="statHp">0</strong></div>
+                <div>Maks. demonów z limitu Czartów Lordów: <strong id="statPitLimit">0</strong></div>
+                <div>Maks. demonów z puli HP trupów: <strong id="statHpLimit">0</strong></div>
+            </div>
+        </div>
+        <div class="warning">
+            Pamiętaj: Nie możesz wskrzesić więcej Demonów, niż wynosiła pierwotna liczba jednostek w poświęcanym oddziale!
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const pitLords = parseInt(document.getElementById('pitLords').value) || 0;
+            const deadUnits = parseInt(document.getElementById('deadUnits').value) || 0;
+            const baseHp = parseInt(document.getElementById('baseHp').value) || 0;
+
+            const elixirLife = document.getElementById('elixirLife').checked;
+            const ringVitality = document.getElementById('ringVitality').checked;
+            const ringLife = document.getElementById('ringLife').checked;
+            const vialLifeblood = document.getElementById('vialLifeblood').checked;
+
+            let flatHp = 0;
+            let multiplier = 1.0;
+
+            // Złoty Eliksir Życia (dodaje 4 HP oraz mnożnik +25%)
+            if (elixirLife) {
+                flatHp += 4;
+                multiplier += 0.25; 
+            }
+
+            // Pojedyncze artefakty
+            if (ringVitality) flatHp += 1;
+            if (ringLife) flatHp += 1;
+            if (vialLifeblood) flatHp += 2;
+
+            // Gra mnoży bazowe HP, ucina ułamki i dodaje płaskie bonusy
+            const finalUnitHp = Math.floor(baseHp * multiplier) + flatHp;
+
+            const maxFromPitLords = Math.floor((pitLords * 50) / 35);
+            const totalDeadHp = deadUnits * finalUnitHp;
+            const maxFromDeadHp = Math.floor(totalDeadHp / 35);
+
+            const demonsRaised = Math.min(maxFromPitLords, maxFromDeadHp, deadUnits);
+
+            document.getElementById('finalDemons').innerText = demonsRaised;
+            document.getElementById('statHp').innerText = finalUnitHp;
+            document.getElementById('statPitLimit').innerText = maxFromPitLords;
+            document.getElementById('statHpLimit').innerText = maxFromDeadHp;
+        }
+
+        // Uruchomienie przeliczeń na starcie
+        calculate();
+    </script>
+</body>
+</html>
